@@ -2,6 +2,13 @@
 
 namespace App;
 
+use App\Adapter\RapidApiDataAdapter;
+use App\Api\Rapidapi\FreeNba\Client;
+use App\Command\NbaCommand;
+use App\Exceptions\InvalidCommandException;
+use App\Provider\RapidApi\RapidApiProvider;
+use App\Validator\GameGameValidator;
+
 class Bootstrap
 {
     public function __invoke(array $arguments): void
@@ -20,13 +27,22 @@ class Bootstrap
 
     private function runCommand(mixed $commandName, array $commandArguments): void
     {
-        $command = new Command();
+        $command = new NbaCommand(
+            new Printer(),
+            new GameGameValidator(),
+            new RapidApiProvider(
+                new Client(),
+                new RapidApiDataAdapter()
+            )
+        );
 
         switch ($commandName) {
             case 'teams':
                 $command->teamsList($commandArguments);
                 break;
-
+            case 'games':
+                $command->gamesList($commandArguments);
+                break;
             case 'help':
                 $command->executeHelp();
                 break;

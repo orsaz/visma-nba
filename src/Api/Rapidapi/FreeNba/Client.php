@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace App;
+namespace App\Api\Rapidapi\FreeNba;
 
 use Exception;
 
-class RapidApiClient
+class Client implements FreeNbaClientInterface
 {
     // Readme in https://rapidapi.com/theapiguy/api/free-nba/details
     private string $baseUrl = 'https://free-nba.p.rapidapi.com/';
@@ -13,6 +13,39 @@ class RapidApiClient
     public function getTeams(): array
     {
         $url = 'teams?page=0';
+
+        return $this->get($url);
+    }
+
+    public function getGames(int $page = 0, int $perPage = 25, array $teamIds = [], string $date = '', array $seasons = []): array
+    {
+        $params = [
+            'page' => $page,
+            'per_page' => $perPage,
+            '$teamIds' => implode(',', $teamIds),
+            'date' => $date,
+            'seasons' => implode(',', $seasons)
+        ];
+
+        $url = 'games?' . http_build_query($params);
+
+        return $this->get($url);
+    }
+
+    public function getPlayers(int $page = 0, int $perPage = 25, array $search = []): array
+    {
+        $params = [
+            'page' => $page,
+            'per_page' => $perPage,
+        ];
+
+        $url = 'players?' . http_build_query($params);
+
+        return $this->get($url);
+    }
+
+    private function get(string $url): array
+    {
         $curl = curl_init();
 
         curl_setopt_array($curl, [
@@ -40,15 +73,5 @@ class RapidApiClient
         }
 
         return json_decode($response, true);
-    }
-
-    public function getGames(): array
-    {
-        throw new Exception('Not implemented');
-    }
-
-    public function getStats(): array
-    {
-        throw new Exception('Not implemented');
     }
 }
